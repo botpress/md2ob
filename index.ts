@@ -20,7 +20,19 @@ export type IBook = {
   topics: ITopic[];
 };
 
-export default function convert(...markdown: string[]): IBook {
+export type Exception = {
+  type: "warning" | "error";
+  file_index: number;
+  file_line: number;
+  topic?: string;
+  subtopic?: string;
+  message: string;
+  actual: string;
+};
+
+export type Result = { book: IBook; exceptions: Exception[] };
+
+export default function convert(...markdown: string[]): Result {
   markdown.map(() => {});
-  return { topics: [] };
+  return { book: { topics: [] }, exceptions: [] };
 }

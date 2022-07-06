@@ -9,9 +9,8 @@ Subtopic description.
 - Fact 1
 - Fact 2`;
   const result = convert(content);
-  t.true(typeof result === "object", "returns an object");
-
-  t.deepEqual(result, <IBook>{
+  t.deepEqual(result.exceptions, []);
+  t.deepEqual(result.book, <IBook>{
     topics: [
       {
         title: "Topic Name",
@@ -63,9 +62,9 @@ Subtopic3 description.
     - \`fact 5 attachment 4\`
 - Fact 6`;
   const result = convert(content);
-  t.true(typeof result === "object", "returns an object");
 
-  t.deepEqual(result, <IBook>{
+  t.deepEqual(result.exceptions, []);
+  t.deepEqual(result.book, <IBook>{
     topics: [
       {
         title: "Topic Name",
