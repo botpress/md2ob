@@ -2,7 +2,7 @@
 
 > Converts a list of markdown files to an OpenBook JSON object
 
-**md2ob** is a lightweight npm library used by the OpenBook Playground to convert users' Markdown files to an OpenBook JSON object for book compilation via API.
+**md2ob** is a lightweight npm library used by the [OpenBook Playground](https://openbook-playground.botpress.tools) to convert users' Markdown files to an OpenBook JSON object for book compilation via [API](https://openbook.botpress.cloud/redoc).
 
 This library can be used by anyone to create custom front-end or back-end OpenBook clients and preserve the same markdown format as our Playground.
 
