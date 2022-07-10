@@ -30,7 +30,7 @@ This is the description of subtopic 1
 - A second fact
 `
 
-const result = convert(file1);
+const result = convert(...[file1]);
 
 if (result.success) {
     // Success
