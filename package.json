@@ -1,5 +1,5 @@
 {
-  "name": "md2ob",
+  "name": "@botpress/md2ob",
   "version": "0.0.1",
   "description": "Converts a list of markdown files to OpenBook JSON schema",
   "repository": "git@github.com:botpress/md2ob.git",
