@@ -6,14 +6,13 @@
   "author": "Sylvain Perron <sylvain.perron@botpress.com>",
   "license": "MIT",
   "private": true,
-  "type": "module",
   "exports": "./dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
     "node": ">=16"
   },
   "scripts": {
-    "test": "ava",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"node16\" }' mocha -r ts-node/register 'tests/**/*.ts'",
     "build": "del-cli dist && tsc",
     "prepack": "npm run build"
   },
@@ -25,18 +24,16 @@
     "botpress"
   ],
   "devDependencies": {
+    "@types/markdown-it": "^12.2.3",
+    "@types/mocha": "^9.1.1",
     "@types/node": "^18.0.3",
-    "ava": "^4.3.0",
     "del-cli": "^4.0.1",
+    "mocha": "^10.0.0",
+    "ts-mocha": "^10.0.0",
     "ts-node": "^10.8.2",
     "typescript": "^4.7.4"
   },
-  "ava": {
-    "extensions": {
-      "ts": "module"
-    },
-    "nodeArguments": [
-      "--loader=ts-node/esm"
-    ]
+  "dependencies": {
+    "markdown-it": "^13.0.1"
   }
 }
