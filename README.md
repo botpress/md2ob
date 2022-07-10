@@ -30,7 +30,15 @@ This is the description of subtopic 1
 - A second fact
 `
 
-const { book, exceptions } = convert(file1);
-// book is an object { topics: [...] }
-// exceptions is an array of warnings/errors
+const result = convert(file1);
+
+if (result.success) {
+    // Success
+    console.log(result.book, result.warnings)
+else {
+    // Failure
+    console.log(result.errors)
+}
+
+
 ```
