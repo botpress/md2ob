@@ -15,7 +15,7 @@ npm install md2ob
 ## Usage
 
 ```js
-import convert from "md2ob";
+import convert from "@botpress/md2ob";
 
 const file1 = `
 # Topic 1
@@ -39,6 +39,4 @@ else {
     // Failure
     console.log(result.errors)
 }
-
-
 ```
