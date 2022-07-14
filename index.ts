@@ -1,45 +1,46 @@
 import Markdown from 'markdown-it'
 
-type Fact = {
+interface Fact {
   text: string
   questions: string[]
   attachments: string[]
 }
 
-type Subtopic = {
+interface Subtopic {
   title: string
   description: string
   facts: Fact[]
 }
 
-type Topic = {
+interface Topic {
   title: string
   description: string
   subtopics: Subtopic[]
 }
 
-type Exception = {
+interface Exception {
   type: 'warning' | 'error'
   file_index: number
   file_line_context: string
+  line_number?: any
   message: string
 }
 
-type ConvertWarning = Exception & { type: 'warning' }
-type ConvertError = Exception & { type: 'error' }
+export type ConvertWarning = Exception & { type: 'warning' }
+export type ConvertError = Exception & { type: 'error' }
 
-type SuccessfulConversion = {
+interface SuccessfulConversion {
   success: true
   book: Book
   warnings: ConvertWarning[]
 }
 
-type FailedConversion = {
+interface FailedConversion {
   success: false
   errors: ConvertError[]
 }
 
-export type Book = {
+export interface Book {
   topics: Topic[]
 }
 
@@ -58,49 +59,51 @@ export default function convert(...markdowns: string[]): ConversionResult {
   const errors: ConvertError[] = []
   const topics: Topic[] = []
   let fileIndex = 0
-  let allFacts: string[] = []
+  const allFacts: string[] = []
 
   const unlink = (txt: string) => txt.replace(/\[(.+?)\]\(.+?\)/gi, '$1')
   const trim = (txt: string) => (txt || '').trim()
 
-  for (let markdown of markdowns) {
-    fileIndex++
+  for (const markdown of markdowns) {
     const md = new Markdown()
     const tokens = md.parse(markdown, {})
+    const lines = markdown.split('\n')
 
-    let file_line_context: string[] = []
+    const file_line_context: string[] = []
     let subtopics: Subtopic[] = []
     let topicDescription = ''
     let curEl = ''
     let h1Count = 0
     let topicTitle = ''
     let tempSubtopicTitle = ''
-    let level3Facts = []
-    let tempDescription = []
+    let level3Facts: Fact[] = []
+    let tempDescription: string[] = []
     let curFact: Fact | null = null
 
     try {
     } catch (err) {}
 
-    const warn = (message: string) => {
+    const warn = (message: string, lineText?: string) => {
       warnings.push({
         type: 'warning',
         file_index: fileIndex,
+        line_number: lineText && lines.findIndex((x) => x.includes(lineText)) + 1,
+        message,
         file_line_context:
           file_line_context.filter(Boolean).slice(-10).join(' ') +
-          `\n---\nCurrent Topic: ${topicTitle}\nSubtopic: ${tempSubtopicTitle}\nFact: ${curFact?.text || '-'}`,
-        message
+          `\n---\nCurrent Topic: ${topicTitle}\nSubtopic: ${tempSubtopicTitle}\nFact: ${curFact?.text || '-'}`
       })
     }
 
-    const error = (message: string) => {
+    const error = (message: string, lineText?: string) => {
       errors.push({
         type: 'error',
         file_index: fileIndex,
+        line_number: lineText && lines.findIndex((x) => x.includes(lineText)) + 1,
+        message,
         file_line_context:
           file_line_context.filter(Boolean).slice(-20).join(' ') +
-          `\n---\nCurrent Topic: ${topicTitle}\nSubtopic: ${tempSubtopicTitle}\nFact: ${curFact?.text || '-'}`,
-        message
+          `\n---\nCurrent Topic: ${topicTitle}\nSubtopic: ${tempSubtopicTitle}\nFact: ${curFact?.text || '-'}`
       })
     }
 
@@ -112,7 +115,8 @@ export default function convert(...markdowns: string[]): ConversionResult {
 
       if (cur?.type == 'heading_open' && cur.tag == 'h1') {
         if (!h1Count && (subtopics.length || tempSubtopicTitle)) {
-          error(`Subtopic "${subtopics[0]?.title || tempSubtopicTitle}" must be enclosed inside a Topic.`)
+          const subtopicTitle = subtopics[0]?.title || tempSubtopicTitle
+          error(`Subtopic "${subtopicTitle}" must be enclosed inside a Topic.`, subtopicTitle)
           break
         }
 
@@ -122,7 +126,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
 
       if (curEl == 'h1' && cur?.tag == 'h1' && cur.type == 'heading_close') {
         if (++h1Count >= 2) {
-          error(`Only one topic can be defined in a markdown file.`)
+          error('Only one topic can be defined in a markdown file.')
           break
         }
 
@@ -133,7 +137,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
       if (curEl == 'h1') {
         topicTitle += unlink(cur?.content || '')
         if (topicTitle.trim().length >= LengthLimits.titlesLength) {
-          error(`Topic exceeds char length limit of ${LengthLimits.titlesLength}`)
+          error(`Topic exceeds char length limit of ${LengthLimits.titlesLength}`, topicTitle)
           break
         }
         continue
@@ -148,17 +152,17 @@ export default function convert(...markdowns: string[]): ConversionResult {
 
         if (tempSubtopicTitle.length) {
           if (!tempSubtopicTitle.trim().length) {
-            error(`Subtopic title must be non-empty.`)
+            error('Subtopic title must be non-empty.')
             break
           }
 
           if (!description.length) {
-            error(`Subtopic ${tempSubtopicTitle} is missing description.`)
+            error(`Subtopic ${tempSubtopicTitle} is missing description.`, tempSubtopicTitle)
             break
           }
 
           if (description.trim().length >= LengthLimits.descriptionsLength) {
-            error(`Subtopic description exceeds char length limit of ${LengthLimits.descriptionsLength}`)
+            error(`Subtopic description exceeds char length limit of ${LengthLimits.descriptionsLength}`, description)
             break
           }
 
@@ -172,7 +176,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
             topicDescription = description
 
             if (description.trim().length >= LengthLimits.descriptionsLength) {
-              error(`Topic description exceeds char length limit of ${LengthLimits.descriptionsLength}`)
+              error(`Topic description exceeds char length limit of ${LengthLimits.descriptionsLength}`, description)
               break
             }
           }
@@ -194,7 +198,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
       if (curEl == 'h2') {
         tempSubtopicTitle += unlink(cur?.content || '')
         if (tempSubtopicTitle.trim().length >= LengthLimits.titlesLength) {
-          error(`Subtopic exceeds char length limit of ${LengthLimits.titlesLength}`)
+          error(`Subtopic exceeds char length limit of ${LengthLimits.titlesLength}`, tempSubtopicTitle)
           break
         }
         continue
@@ -204,16 +208,16 @@ export default function convert(...markdowns: string[]): ConversionResult {
         const factText = unlink(trim(cur.content))
 
         if (factText.length <= 1) {
-          error(`Fact must be non-empty`)
+          error('Fact must be non-empty')
           break
         }
 
         if (allFacts.includes(factText)) {
-          warn(`Duplicated fact: ${factText}`)
+          warn(`Duplicated fact: ${factText}`, factText)
         }
 
         if (factText.trim().length >= LengthLimits.factsLength) {
-          error(`Fact exceeds char length limit of ${LengthLimits.factsLength}`)
+          error(`Fact exceeds char length limit of ${LengthLimits.factsLength}`, factText)
           break
         }
 
@@ -224,7 +228,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
           questions: []
         }
         if (!tempSubtopicTitle.trim().length) {
-          error(`Facts must be contained inside subtopics, not in topics`)
+          error('Facts must be contained inside subtopics, not in topics', factText)
           break
         }
 
@@ -235,7 +239,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
         const question = unlink(trim(cur.content))
         curFact.questions.push(question)
         if (question.trim().length >= LengthLimits.questionsLength) {
-          error(`Fact question exceeds char length limit of ${LengthLimits.questionsLength}`)
+          error(`Fact question exceeds char length limit of ${LengthLimits.questionsLength}`, question)
           break
         }
       } else if (
@@ -248,7 +252,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
         const attachment = trim(cur.content).replace(/^`|`$/g, '')
         curFact?.attachments.push(attachment)
         if (attachment.trim().length >= LengthLimits.attachmentsLength) {
-          error(`Fact attachment exceeds char length limit of ${LengthLimits.attachmentsLength}`)
+          error(`Fact attachment exceeds char length limit of ${LengthLimits.attachmentsLength}`, attachment)
           break
         }
       }
@@ -259,19 +263,19 @@ export default function convert(...markdowns: string[]): ConversionResult {
     }
 
     if (!topicDescription.trim().length && !errors.length) {
-      error(`Topic ${topicTitle} is missing description`)
+      error(`Topic ${topicTitle} is missing description`, topicTitle)
     }
 
-    for (let subtopic of subtopics) {
+    for (const subtopic of subtopics) {
       if (!subtopic.facts.length) {
-        warn(`Subtopic "${subtopic.title}" contains no fact (is empty) and will be ignored`)
+        warn(`Subtopic "${subtopic.title}" contains no fact (is empty) and will be ignored`, subtopic.title)
       }
     }
 
     subtopics = subtopics.filter((x) => x.facts.length)
 
     if (!subtopics.length) {
-      warn(`Topic is empty (no subtopics) and will be ignored`)
+      warn('Topic is empty (no subtopics) and will be ignored', topicTitle)
     } else {
       topics.push({
         title: topicTitle,
@@ -280,21 +284,23 @@ export default function convert(...markdowns: string[]): ConversionResult {
       })
     }
 
-    for (let topic of topics) {
+    for (const topic of topics) {
       const duplicatedTopics = topics.filter((x) => x !== topic && x.title === topic.title)
       if (duplicatedTopics.length) {
-        error(`Topic [${topic.title}] is duplicated`)
+        error(`Topic [${topic.title}] is duplicated`, topic.title)
         break
       }
     }
 
-    for (let subtopic of subtopics) {
+    for (const subtopic of subtopics) {
       const duplicatedTopics = subtopics.filter((x) => x !== subtopic && x.title === subtopic.title)
       if (duplicatedTopics.length) {
-        error(`Subtopic [${topicTitle} -> ${subtopic.title}] is duplicated`)
+        error(`Subtopic [${topicTitle} -> ${subtopic.title}] is duplicated`, subtopic.title)
         break
       }
     }
+
+    fileIndex++
   }
 
   if (errors.length) {
@@ -306,9 +312,9 @@ export default function convert(...markdowns: string[]): ConversionResult {
 
   return {
     success: true,
-    warnings: warnings,
+    warnings,
     book: {
-      topics: topics
+      topics
     }
   }
 }
