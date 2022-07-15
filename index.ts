@@ -113,7 +113,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
       file_line_context.push(cur?.markup || '')
       file_line_context.push(cur?.content || '')
 
-      if (cur?.type == 'heading_open' && cur.tag == 'h1') {
+      if (cur?.type === 'heading_open' && cur.tag === 'h1') {
         if (!h1Count && (subtopics.length || tempSubtopicTitle)) {
           const subtopicTitle = subtopics[0]?.title || tempSubtopicTitle
           error(`Subtopic "${subtopicTitle}" must be enclosed inside a Topic.`, subtopicTitle)
@@ -124,7 +124,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
         curEl = 'h1'
       }
 
-      if (curEl == 'h1' && cur?.tag == 'h1' && cur.type == 'heading_close') {
+      if (curEl === 'h1' && cur?.tag === 'h1' && cur.type === 'heading_close') {
         if (++h1Count >= 2) {
           error('Only one topic can be defined in a markdown file.')
           break
@@ -134,7 +134,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
         continue
       }
 
-      if (curEl == 'h1') {
+      if (curEl === 'h1') {
         topicTitle += unlink(cur?.content || '')
         if (topicTitle.trim().length >= LengthLimits.titlesLength) {
           error(`Topic exceeds char length limit of ${LengthLimits.titlesLength}`, topicTitle)
@@ -143,7 +143,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
         continue
       }
 
-      if ((cur?.type == 'heading_open' && cur.tag == 'h2') || i === tokens.length - 1) {
+      if ((cur?.type === 'heading_open' && cur.tag === 'h2') || i === tokens.length - 1) {
         const description = tempDescription
           .map((x) => x.trim())
           .join('. ')
@@ -189,13 +189,13 @@ export default function convert(...markdowns: string[]): ConversionResult {
         tempDescription = []
       }
 
-      if (curEl == 'h2' && cur?.tag == 'h2' && cur.type == 'heading_close') {
+      if (curEl === 'h2' && cur?.tag === 'h2' && cur.type === 'heading_close') {
         curEl = ''
         curFact = null
         continue
       }
 
-      if (curEl == 'h2') {
+      if (curEl === 'h2') {
         tempSubtopicTitle += unlink(cur?.content || '')
         if (tempSubtopicTitle.trim().length >= LengthLimits.titlesLength) {
           error(`Subtopic exceeds char length limit of ${LengthLimits.titlesLength}`, tempSubtopicTitle)
@@ -204,7 +204,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
         continue
       }
 
-      if (cur?.type == 'inline' && cur.level == 3) {
+      if (cur?.type === 'inline' && cur.level === 3) {
         const factText = unlink(trim(cur.content))
 
         if (factText.length <= 1) {
@@ -235,7 +235,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
         level3Facts.push(curFact)
       }
 
-      if (cur?.type == 'inline' && cur.level == 6 && cur.content && curFact) {
+      if (cur?.type === 'inline' && cur.level === 6 && cur.content && curFact) {
         const question = unlink(trim(cur.content))
         curFact.questions.push(question)
         if (question.trim().length >= LengthLimits.questionsLength) {
@@ -243,7 +243,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
           break
         }
       } else if (
-        cur?.type == 'inline' &&
+        cur?.type === 'inline' &&
         cur.level >= 5 &&
         curFact &&
         trim(cur.content).startsWith('`') &&
@@ -257,7 +257,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
         }
       }
 
-      if (cur?.type == 'inline' && cur.level == 1 && cur.content) {
+      if (cur?.type === 'inline' && cur.level === 1 && cur.content) {
         tempDescription.push(unlink(cur?.content || ''))
       }
     }
@@ -285,7 +285,7 @@ export default function convert(...markdowns: string[]): ConversionResult {
     }
 
     for (const topic of topics) {
-      const duplicatedTopics = topics.filter((x) => x !== topic && x.title === topic.title)
+      const duplicatedTopics = topics.filter((x) => x !== topic && x.title === topic.title && x.title === topicTitle)
       if (duplicatedTopics.length) {
         error(`Topic [${topic.title}] is duplicated`, topic.title)
         break
