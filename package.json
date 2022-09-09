@@ -6,13 +6,13 @@
   "author": "Sylvain Perron <sylvain.perron@botpress.com>",
   "license": "MIT",
   "private": true,
-  "exports": "./dist/index.js",
-  "types": "dist/index.d.ts",
+  "exports": "./dist/md2ob.js",
+  "types": "dist/md2ob.d.ts",
   "engines": {
     "node": ">=16"
   },
   "scripts": {
-    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"node16\" }' mocha -r ts-node/register 'tests/**/*.ts'",
+    "test": "mocha -r ts-node/register 'tests/**/*.ts'",
     "build": "del-cli dist && tsc",
     "prepack": "npm run build"
   },
@@ -34,6 +34,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "cross-env": "^7.0.3",
     "markdown-it": "^13.0.1"
   }
 }

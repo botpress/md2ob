@@ -1,22 +1,5 @@
 import Markdown from 'markdown-it'
-
-interface Fact {
-  text: string
-  questions: string[]
-  attachments: string[]
-}
-
-interface Subtopic {
-  title: string
-  description: string
-  facts: Fact[]
-}
-
-interface Topic {
-  title: string
-  description: string
-  subtopics: Subtopic[]
-}
+import { Book, Fact, Subtopic, Topic } from './typings'
 
 interface Exception {
   type: 'warning' | 'error'
@@ -38,10 +21,6 @@ interface SuccessfulConversion {
 interface FailedConversion {
   success: false
   errors: ConvertError[]
-}
-
-export interface Book {
-  topics: Topic[]
 }
 
 export type ConversionResult = SuccessfulConversion | FailedConversion
