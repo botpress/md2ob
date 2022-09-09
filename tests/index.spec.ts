@@ -1,6 +1,7 @@
 import assert from 'assert'
-
-import convert, { Book, LengthLimits } from '../index'
+import { bookToMd } from '../ob2md'
+import convert, { LengthLimits } from '../md2ob'
+import { Book } from '../typings'
 
 const assertIncludes = (str1: string, str2: string, message?: string) => {
   const wrap = message ? ` (${message})` : ''
@@ -10,9 +11,13 @@ const assertIncludes = (str1: string, str2: string, message?: string) => {
 describe('success: parsing features', () => {
   it('minimum viable book', () => {
     const content = `# Topic Name
+
 Topic description.
+
 ## Subtopic Name
+
 Subtopic description.
+
 - Fact 1
 - Fact 2`
     const result = convert(content)
@@ -40,6 +45,8 @@ Subtopic description.
         }
       ]
     })
+
+    assert.deepEqual(bookToMd(result.book), [content])
   })
 
   it('complex book', () => {
@@ -140,15 +147,20 @@ Subtopic description.
 
   it('processes multiple topics', () => {
     const content = (n: number) => `# Topic Name ${n}
+
 Topic description.
+
 ## Subtopic Name
+
 Subtopic description.
+
 - Fact 1
 - Fact 2`
 
     const result = convert(...[1, 2, 3, 4, 5, 6, 7].map(content))
     assert(result.success === true, 'test should pass')
     assert(result.book.topics!.length === 7, 'should be 7 topics')
+    assert.deepEqual(bookToMd(result.book), [1, 2, 3, 4, 5, 6, 7].map(content))
   })
 })
 
@@ -198,6 +210,21 @@ takes more than one line.
         }
       ]
     })
+
+    const formatted = `# Topic Name
+
+Topic description.
+
+## Subtopic Name
+
+Subtopic description that. takes more than one line.
+
+- Fact 1
+  - > question 1
+  - > question 2
+- Fact 2`
+
+    assert.deepEqual(bookToMd(result.book), [formatted])
   })
 
   it('removes new lines from descriptions and joins using dots', () => {
